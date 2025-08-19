@@ -1,9 +1,9 @@
-// src/components/auth/LoginForm.tsx
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Use the new App Router hook
-import api from '@/lib/api'; // Import our new API service
+import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import axios from 'axios'; // Import axios
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,8 @@ import { LogIn } from 'lucide-react';
 
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('hr@example.com'); // Pre-fill for easy testing
-  const [password, setPassword] = useState('password123'); // Pre-fill for easy testing
+  const [email, setEmail] = useState('hr@example.com');
+  const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -24,21 +24,22 @@ export function LoginForm() {
 
     try {
       const response = await api.post('/auth/login', { email, password });
-
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
         const user = response.data.user;
         localStorage.setItem('user', JSON.stringify(user));
-
-        // Redirect based on role
         if (user.role === 'HR') {
           router.push('/hr-admin');
         } else {
           router.push('/dashboard');
         }
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed.');
+    } catch (err) { // Changed from catch (err: any)
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || 'Login failed.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
     }

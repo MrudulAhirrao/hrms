@@ -1,23 +1,14 @@
-// src/components/hr/PostAnnouncementForm.tsx
 "use client";
 
 import { useState } from "react";
 import api from "@/lib/api";
+import axios from 'axios'; // Import axios
 import { Employee } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Megaphone } from "lucide-react";
 
@@ -30,7 +21,7 @@ export function PostAnnouncementForm({ employees, onSuccess }: PostAnnouncementF
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
-  const [recipient, setRecipient] = useState('all'); // 'all' or an employeeId
+  const [recipient, setRecipient] = useState('all');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -47,12 +38,15 @@ export function PostAnnouncementForm({ employees, onSuccess }: PostAnnouncementF
       });
       onSuccess();
       setOpen(false);
-      // Reset form
       setTitle('');
       setMessage('');
       setRecipient('all');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to post announcement.');
+    } catch (err) { // Changed from catch (err: any)
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || 'Failed to post announcement.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
     }

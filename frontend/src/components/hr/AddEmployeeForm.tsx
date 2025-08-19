@@ -1,25 +1,16 @@
-// src/components/hr/AddEmployeeForm.tsx
 "use client";
 
 import { useState } from "react";
 import api from "@/lib/api";
+import axios from 'axios'; // Import axios
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { UserPlus } from "lucide-react";
 
 interface AddEmployeeFormProps {
-  onSuccess: () => void; // To refetch employee list later
+  onSuccess: () => void;
 }
 
 export function AddEmployeeForm({ onSuccess }: AddEmployeeFormProps) {
@@ -36,27 +27,23 @@ export function AddEmployeeForm({ onSuccess }: AddEmployeeFormProps) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     const email = `${emailUsername}@companyemployee.com`;
 
     try {
-      await api.post('/employees', {
-        name,
-        email,
-        password,
-        department,
-        joiningDate,
-      });
+      await api.post('/employees', { name, email, password, department, joiningDate });
       onSuccess();
       setOpen(false);
-      // Reset form
       setName('');
       setEmailUsername('');
       setPassword('');
       setDepartment('');
       setJoiningDate('');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to add employee.');
+    } catch (err) { // Changed from catch (err: any)
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || 'Failed to add employee.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
     }
